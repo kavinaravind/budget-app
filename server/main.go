@@ -24,9 +24,9 @@ var (
 )
 
 type transaction struct {
-	Category string `bson:"category"`
-	Cost     int    `bson:"cost"`
-	Name     string `bson:"name"`
+	Category string `json:"category" bson:"category"`
+	Cost     int    `json:"cost" bson:"cost"`
+	Name     string `json:"name" bson:"name"`
 }
 
 func setupMongo(ctx context.Context) error {
@@ -89,14 +89,16 @@ func deleteTransaction(ctx context.Context, id primitive.ObjectID) error {
 
 func createTransactionHandler(c echo.Context) error {
 	transaction := transaction{}
-	err := c.Bind(transaction)
+	err := c.Bind(&transaction)
 	if err != nil {
 		return err
 	}
+
 	err = createTransaction(c.Request().Context(), &transaction)
 	if err != nil {
 		return err
 	}
+
 	return c.String(http.StatusOK, "OK")
 }
 
@@ -105,6 +107,7 @@ func getTransactionsHandler(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
+
 	return c.JSON(http.StatusOK, &transactions)
 }
 
@@ -113,14 +116,18 @@ func updateTransactionHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	transaction := transaction{}
-	if err := c.Bind(transaction); err != nil {
+	err = c.Bind(&transaction)
+	if err != nil {
 		return err
 	}
+
 	err = updateTransaction(c.Request().Context(), objID, &transaction)
 	if err != nil {
 		return err
 	}
+
 	return c.String(http.StatusOK, "OK")
 }
 
@@ -129,10 +136,12 @@ func deleteTransactionHandler(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+
 	err = deleteTransaction(c.Request().Context(), objID)
 	if err != nil {
 		return err
 	}
+
 	return c.String(http.StatusOK, "OK")
 }
 
