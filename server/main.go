@@ -9,15 +9,16 @@ import (
 )
 
 const (
-	Port          = 8080
-	ConnectionURI = "mongodb://127.0.0.1:27017/"
+	port          = 8080
+	connectionURI = "mongodb://127.0.0.1:27017/"
+	dbName        = "budget"
 )
 
 var (
 	db *mongo.Database
 )
 
-func SetupMongo(ctx context.Context) error {
+func setupMongo(ctx context.Context) error {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(ConnectionURI))
 	if err != nil {
 		return err
@@ -28,14 +29,30 @@ func SetupMongo(ctx context.Context) error {
 		return err
 	}
 
-	db = client.Database("budget")
+	db = client.Database(dbName)
+	return nil
+}
+
+func getBudgets() error {
+	return nil
+}
+
+func updateBudget() error {
+	return nil
+}
+
+func createBudget() error {
+	return nil
+}
+
+func deleteBudget() error {
 	return nil
 }
 
 func main() {
 	ctx := context.TODO()
 
-	err := SetupMongo(ctx)
+	err := setupMongo(ctx)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
