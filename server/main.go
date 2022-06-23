@@ -8,6 +8,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const (
@@ -20,8 +21,13 @@ var (
 	db *mongo.Database
 )
 
-type response struct {
-	status string
+type transaction struct {
+	cost int
+	name string
+}
+type budget struct {
+	category string
+	max      int
 }
 
 func setupMongo(ctx context.Context) error {
@@ -39,8 +45,25 @@ func setupMongo(ctx context.Context) error {
 	return nil
 }
 
-func getBudgets() error {
-	return nil
+func getBudgets(ctx context.Context) ([]budget, error) {
+	var budgets []budget
+
+	cursor, err := db.Collection("budget").Find(ctx, bson.D{})
+	if err != nil {
+		defer cursor.Close(ctx)
+		return budgets, err
+	}
+
+	var budget budget
+	for cursor.Next(ctx) {
+		err := cursor.Decode(&budget)
+		if err != nil {
+			return budgets, err
+		}
+		budgets = append(budgets, budget)
+	}
+
+	return budgets, nil
 }
 
 func updateBudget() error {
