@@ -79,10 +79,11 @@ func deleteBudget() error {
 }
 
 func getBudgetsHandler(c echo.Context) error {
-	ok := response{
-		status: "sucessful",
+	budgets, err := getBudgets(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, &ok)
+	return c.JSON(http.StatusOK, &budgets)
 }
 
 func createBudgetHandler(c echo.Context) error {
@@ -107,14 +108,12 @@ func deleteBudgetHandler(c echo.Context) error {
 }
 
 func main() {
-	ctx := context.TODO()
+	e := echo.New()
 
-	err := setupMongo(ctx)
+	err := setupMongo(e.Server.ConnContext())
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
-
-	e := echo.New()
 
 	e.GET("/budgets", getBudgetsHandler)
 	e.POST("/budget", createBudgetHandler)
