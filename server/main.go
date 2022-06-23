@@ -24,9 +24,9 @@ var (
 )
 
 type transaction struct {
-	Category string
-	Cost     int
-	Name     string
+	Category string `bson:"category"`
+	Cost     int    `bson:"cost"`
+	Name     string `bson:"name"`
 }
 
 func setupMongo(ctx context.Context) error {
