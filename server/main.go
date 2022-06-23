@@ -24,6 +24,7 @@ var (
 )
 
 type transaction struct {
+	Id       string `json:"id" bson:"_id"`
 	Category string `json:"category" bson:"category"`
 	Cost     int    `json:"cost" bson:"cost"`
 	Name     string `json:"name" bson:"name"`
