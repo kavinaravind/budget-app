@@ -6,15 +6,17 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"gopkg.in/mgo.v2/bson"
 )
 
 const (
-	address       = ":8080"
-	connectionURI = "mongodb://127.0.0.1:27017/"
-	dbName        = "budget"
+	address        = ":8080"
+	connectionURI  = "mongodb://127.0.0.1:27017/"
+	dbName         = "budget"
+	collectionName = "transaction"
 )
 
 var (
@@ -22,12 +24,9 @@ var (
 )
 
 type transaction struct {
-	cost int
-	name string
-}
-type budget struct {
-	category string
-	max      int
+	Category string
+	Cost     int
+	Name     string
 }
 
 func setupMongo(ctx context.Context) error {
@@ -45,80 +44,115 @@ func setupMongo(ctx context.Context) error {
 	return nil
 }
 
-func getBudgets(ctx context.Context) ([]budget, error) {
-	var budgets []budget
+func getTransactions(ctx context.Context) ([]transaction, error) {
+	var transactions []transaction
 
-	cursor, err := db.Collection("budget").Find(ctx, bson.D{})
+	cursor, err := db.Collection(collectionName).Find(ctx, bson.D{})
 	if err != nil {
 		defer cursor.Close(ctx)
-		return budgets, err
+		return transactions, err
 	}
 
-	var budget budget
+	var transaction transaction
 	for cursor.Next(ctx) {
-		err := cursor.Decode(&budget)
+		err := cursor.Decode(&transaction)
 		if err != nil {
-			return budgets, err
+			return transactions, err
 		}
-		budgets = append(budgets, budget)
+		transactions = append(transactions, transaction)
 	}
 
-	return budgets, nil
+	return transactions, nil
 }
 
-func updateBudget() error {
-	return nil
+func updateTransaction(ctx context.Context, id primitive.ObjectID, transaction *transaction) error {
+	_, err := db.Collection(collectionName).UpdateOne(
+		ctx,
+		bson.D{{"_id", id}},
+		transaction,
+	)
+	return err
 }
 
-func createBudget() error {
-	return nil
+func createTransaction(ctx context.Context, transaction *transaction) error {
+	_, err := db.Collection(collectionName).InsertOne(ctx, transaction)
+	return err
 }
 
-func deleteBudget() error {
-	return nil
+func deleteTransaction(ctx context.Context, id primitive.ObjectID) error {
+	_, err := db.Collection(collectionName).DeleteOne(
+		ctx,
+		bson.D{{"_id", id}},
+	)
+	return err
 }
 
-func getBudgetsHandler(c echo.Context) error {
-	budgets, err := getBudgets(c.Request().Context())
+func getTransactionsHandler(c echo.Context) error {
+	transactions, err := getTransactions(c.Request().Context())
 	if err != nil {
 		return c.String(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusOK, &budgets)
+	return c.JSON(http.StatusOK, &transactions)
 }
 
-func createBudgetHandler(c echo.Context) error {
-	ok := response{
-		status: "sucessful",
+func createTransactionHandler(c echo.Context) error {
+	transaction := transaction{}
+	err := c.Bind(transaction)
+	if err != nil {
+		return err
 	}
-	return c.JSON(http.StatusOK, &ok)
+	err = createTransaction(c.Request().Context(), &transaction)
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, "OK")
 }
 
-func updateBudgetHandler(c echo.Context) error {
-	ok := response{
-		status: "sucessful",
+func updateTransactionHandler(c echo.Context) error {
+	objID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return err
 	}
-	return c.JSON(http.StatusOK, &ok)
+	transaction := transaction{}
+	if err := c.Bind(transaction); err != nil {
+		return err
+	}
+	err = updateTransaction(c.Request().Context(), objID, &transaction)
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, "OK")
 }
 
-func deleteBudgetHandler(c echo.Context) error {
-	ok := response{
-		status: "sucessful",
+func deleteTransactionHandler(c echo.Context) error {
+	objID, err := primitive.ObjectIDFromHex(c.Param("id"))
+	if err != nil {
+		return err
 	}
-	return c.JSON(http.StatusOK, &ok)
+	err = deleteTransaction(c.Request().Context(), objID)
+	if err != nil {
+		return err
+	}
+	return c.String(http.StatusOK, "OK")
 }
 
 func main() {
-	e := echo.New()
+	ctx := context.TODO()
 
-	err := setupMongo(e.Server.ConnContext())
+	err := setupMongo(ctx)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
+	defer func(ctx context.Context) error {
+		return db.Client().Disconnect(ctx)
+	}(ctx)
 
-	e.GET("/budgets", getBudgetsHandler)
-	e.POST("/budget", createBudgetHandler)
-	e.PUT("/budget/:id", updateBudgetHandler)
-	e.DELETE("/budget/:id", deleteBudgetHandler)
+	e := echo.New()
+
+	e.GET("/transactions", getTransactionsHandler)
+	e.POST("/transaction", createTransactionHandler)
+	e.PUT("/transaction/:id", updateTransactionHandler)
+	e.DELETE("/transaction/:id", deleteTransactionHandler)
 
 	e.Logger.Fatal(e.Start(address))
 }
