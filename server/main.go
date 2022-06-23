@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	address        = ":8080"
+	address        = ":3000"
 	connectionURI  = "mongodb://127.0.0.1:27017/"
 	dbName         = "budget"
 	collectionName = "transaction"
@@ -44,6 +44,11 @@ func setupMongo(ctx context.Context) error {
 	return nil
 }
 
+func createTransaction(ctx context.Context, transaction *transaction) error {
+	_, err := db.Collection(collectionName).InsertOne(ctx, transaction)
+	return err
+}
+
 func getTransactions(ctx context.Context) ([]transaction, error) {
 	var transactions []transaction
 
@@ -68,31 +73,18 @@ func getTransactions(ctx context.Context) ([]transaction, error) {
 func updateTransaction(ctx context.Context, id primitive.ObjectID, transaction *transaction) error {
 	_, err := db.Collection(collectionName).UpdateOne(
 		ctx,
-		bson.D{{"_id", id}},
+		bson.D{{Key: "_id", Value: id}},
 		transaction,
 	)
-	return err
-}
-
-func createTransaction(ctx context.Context, transaction *transaction) error {
-	_, err := db.Collection(collectionName).InsertOne(ctx, transaction)
 	return err
 }
 
 func deleteTransaction(ctx context.Context, id primitive.ObjectID) error {
 	_, err := db.Collection(collectionName).DeleteOne(
 		ctx,
-		bson.D{{"_id", id}},
+		bson.D{{Key: "_id", Value: id}},
 	)
 	return err
-}
-
-func getTransactionsHandler(c echo.Context) error {
-	transactions, err := getTransactions(c.Request().Context())
-	if err != nil {
-		return c.String(http.StatusInternalServerError, err.Error())
-	}
-	return c.JSON(http.StatusOK, &transactions)
 }
 
 func createTransactionHandler(c echo.Context) error {
@@ -106,6 +98,14 @@ func createTransactionHandler(c echo.Context) error {
 		return err
 	}
 	return c.String(http.StatusOK, "OK")
+}
+
+func getTransactionsHandler(c echo.Context) error {
+	transactions, err := getTransactions(c.Request().Context())
+	if err != nil {
+		return c.String(http.StatusInternalServerError, err.Error())
+	}
+	return c.JSON(http.StatusOK, &transactions)
 }
 
 func updateTransactionHandler(c echo.Context) error {
@@ -149,8 +149,8 @@ func main() {
 
 	e := echo.New()
 
-	e.GET("/transactions", getTransactionsHandler)
 	e.POST("/transaction", createTransactionHandler)
+	e.GET("/transactions", getTransactionsHandler)
 	e.PUT("/transaction/:id", updateTransactionHandler)
 	e.DELETE("/transaction/:id", deleteTransactionHandler)
 
