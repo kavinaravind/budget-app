@@ -8,13 +8,14 @@ const Update: NextPage = () => {
 
   const transactionContext = React.useContext<Context>(TransactionContext)
   if (transactionContext.transaction == null) {
-    return <h3>No Transaction to Update</h3>
+    return <></>
   }
 
-  const [transaction, setTransaction] = React.useState<Transaction>(transactionContext.transaction)
+  const [transaction, setTransaction] = React.useState<Transaction>(transactionContext.transaction);
 
-  const updateTransaction = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const updateTransaction = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     const requestOptions = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -23,8 +24,21 @@ const Update: NextPage = () => {
     const response = await fetch(`http://localhost:3001/transaction/${transaction.id}`, requestOptions);
     const data = await response.json();
     console.log(data);
-    transactionContext.setTransaction(null)
-    Router.push(`/`)
+
+    transactionContext.setTransaction(null);
+    Router.push(`/`);
+  }
+
+  const deleteTransaction = async () => {
+    const requestOptions = {
+      method: 'DELETE',
+    };
+    const response = await fetch(`http://localhost:3001/transaction/${transaction.id}`, requestOptions);
+    const data = await response.json();
+    console.log(data);
+
+    transactionContext.setTransaction(null);
+    Router.push(`/`);
   }
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +55,7 @@ const Update: NextPage = () => {
         t.cost = +value;
         break;
     }
-    setTransaction(t)
+    setTransaction(t);
   }
   
   return (
@@ -126,15 +140,27 @@ const Update: NextPage = () => {
                   <button
                     type="button"
                     onClick={() => Router.push('/')}
-                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 
+                              hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium 
+                              rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
+                              focus:ring-blue-500"
                   >
                     Update
+                  </button>
+                  <button
+                    type="submit"
+                    className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium 
+                              rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 
+                              focus:ring-red-500"
+                    onClick={() => deleteTransaction()}
+                  >
+                    Delete
                   </button>
                 </div>
               </div>

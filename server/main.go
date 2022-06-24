@@ -31,6 +31,10 @@ type transaction struct {
 	Name     string `json:"name" bson:"name"`
 }
 
+func status(msg string) map[string]string {
+	return map[string]string{"status": msg}
+}
+
 func setupMongo(ctx context.Context) error {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
 	if err != nil {
@@ -53,7 +57,7 @@ func createTransaction(ctx context.Context, transaction *transaction) error {
 }
 
 func getTransactions(ctx context.Context) ([]transaction, error) {
-	var transactions []transaction
+	transactions := []transaction{}
 
 	cursor, err := db.Collection(collectionName).Find(ctx, bson.D{})
 	if err != nil {
@@ -95,21 +99,21 @@ func createTransactionHandler(c echo.Context) error {
 	transaction := transaction{}
 	err := c.Bind(&transaction)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
 	err = createTransaction(c.Request().Context(), &transaction)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
+	return c.JSON(http.StatusOK, status("OK"))
 }
 
 func getTransactionsHandler(c echo.Context) error {
 	transactions, err := getTransactions(c.Request().Context())
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
 	return c.JSON(http.StatusOK, &transactions)
@@ -118,35 +122,35 @@ func getTransactionsHandler(c echo.Context) error {
 func updateTransactionHandler(c echo.Context) error {
 	objID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
 	transaction := transaction{}
 	err = c.Bind(&transaction)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
 	err = updateTransaction(c.Request().Context(), objID, &transaction)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"status": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
+	return c.JSON(http.StatusOK, status("OK"))
 }
 
 func deleteTransactionHandler(c echo.Context) error {
 	objID, err := primitive.ObjectIDFromHex(c.Param("id"))
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
 	err = deleteTransaction(c.Request().Context(), objID)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return c.JSON(http.StatusInternalServerError, status(err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"status": "OK"})
+	return c.JSON(http.StatusOK, status("OK"))
 }
 
 func main() {
