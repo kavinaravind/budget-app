@@ -13,7 +13,16 @@ const Update: NextPage = () => {
 
   const [transaction, setTransaction] = React.useState<Transaction>(transactionContext.transaction)
 
-  const updateTransaction = () => {
+  const updateTransaction = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    const requestOptions = {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(transaction),
+    };
+    const response = await fetch(`http://localhost:3001/transaction/${transaction.id}`, requestOptions);
+    const data = await response.json();
+    console.log(data);
     transactionContext.setTransaction(null)
     Router.push(`/`)
   }
@@ -40,7 +49,7 @@ const Update: NextPage = () => {
       <main>
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div className="px-4 sm:px-6 lg:px-8">
-            <form onSubmit={() => updateTransaction()}className="space-y-8 divide-y divide-gray-200">
+            <form onSubmit={(e) => updateTransaction(e)} className="space-y-8 divide-y divide-gray-200">
               <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                 <div className="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
                   <div>
@@ -95,7 +104,7 @@ const Update: NextPage = () => {
                         htmlFor="cost"
                         className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
                       >
-                        Cost
+                        Cost in Cents
                       </label>
                       <div className="mt-1 sm:mt-0 sm:col-span-2">
                         <input
