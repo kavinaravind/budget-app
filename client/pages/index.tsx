@@ -1,15 +1,38 @@
+import React from "react";
 import type { NextPage } from "next";
 import Head from "next/head";
+import Router from 'next/router'
 
-const Home: NextPage = () => {
-  const transactions = [
-    {
-      id: "62b4c92baa7638dcdc569fdf",
-      name: "Fancy Restaurant",
-      category: "Restaurants",
-      cost: 3512,
+import { Transaction, Context,TransactionContext } from "./_app";
+
+type HomeProps = {
+  transactions: Transaction[]
+}
+
+export async function getStaticProps(): Promise<{props: HomeProps}> {
+  const res = await fetch('http://localhost:3001/transactions')
+  const transactions = await res.json()
+  return {
+    props: {
+      transactions,
     },
-  ];
+  }
+}
+
+const Home: NextPage<HomeProps> = ({ transactions }) => {
+  const transactionContext = React.useContext<Context>(TransactionContext)
+
+  const createTransaction = () => {
+    transactionContext.setTransaction(null)
+    Router.push(`/create`)
+  }
+
+  const editTransaction = (t: Transaction) => {
+    transactionContext.setTransaction(t)
+    Router.push(`/update?id=${t.id}`)
+  }
+
+
   return (
     <div>
       <Head>
@@ -31,6 +54,7 @@ const Home: NextPage = () => {
                 <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
                   <button
                     type="button"
+                    onClick={() => createTransaction()}
                     className="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 
                                px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none 
                                focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
@@ -59,7 +83,7 @@ const Home: NextPage = () => {
                               <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{t.category}</td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{(t.cost / 100).toLocaleString("en-US", {style:"currency", currency:"USD"})}</td>
                               <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                <a href="#" className="text-blue-600 hover:text-blue-900">Edit</a>
+                                <button type="button" onClick={() => editTransaction(t)} className="text-blue-600 hover:text-blue-900">Edit</button>
                               </td>
                             </tr>
                           ))}

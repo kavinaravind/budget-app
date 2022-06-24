@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	address        = ":3000"
+	address        = ":3001"
 	connectionURI  = "mongodb://127.0.0.1:27017/"
 	dbName         = "budget"
 	collectionName = "transaction"
