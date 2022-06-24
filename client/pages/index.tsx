@@ -31,7 +31,6 @@ const Home: NextPage<HomeProps> = ({ transactions }) => {
     Router.push(`/update?id=${t.id}`)
   }
 
-
   return (
     <div className="py-10">
       <main>
