@@ -1,6 +1,8 @@
 import React from "react";
 import type { NextPage } from "next";
 import Router from 'next/router'
+import getConfig from 'next/config'
+import axios from "axios";
 
 import { Transaction, Context,TransactionContext } from "./_app";
 
@@ -8,9 +10,16 @@ type HomeProps = {
   transactions: Transaction[]
 }
 
-export async function getStaticProps(): Promise<{props: HomeProps}> {
-  const res = await fetch('http://localhost:3001/transactions')
-  const transactions = await res.json()
+const { serverRuntimeConfig } = getConfig()
+
+export async function getServerSideProps(): Promise<{props: HomeProps}> {
+  const requestOptions = {
+    url: `http://${serverRuntimeConfig.API_BASE_URL}/api/transactions`,
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  };
+  const {data: transactions} = await axios.request(requestOptions);
+  
   return {
     props: {
       transactions,

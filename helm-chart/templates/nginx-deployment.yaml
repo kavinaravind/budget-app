@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-nginx
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.nginx.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-nginx
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-nginx
+    spec:
+      containers:
+      - name: {{ .Release.Name }}-nginx
+        image: {{ .Values.nginx.image }}
+        imagePullPolicy: Never
+        resources:
+          limits:
+            cpu: 1
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        ports:
+          - containerPort: {{ .Values.nginx.targetPort}}
+            protocol: TCP
+        volumeMounts:
+          - name: nginx-conf
+            readOnly: true
+            mountPath: /etc/nginx/conf.d
+      restartPolicy: Always
+      volumes:
+        - name: nginx-conf
+          configMap:
+            name: {{ .Release.Name }}-nginx-configmap
+            items:
+            - key: default.conf
+              path: default.conf

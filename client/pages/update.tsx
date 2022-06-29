@@ -1,6 +1,7 @@
 import React from "react";
 import type { NextPage } from "next";
 import Router from 'next/router'
+import axios from "axios";
 
 import { Context, Transaction, TransactionContext } from "./_app";
 
@@ -17,12 +18,11 @@ const Update: NextPage = () => {
     event.preventDefault();
 
     const requestOptions = {
+      url: `/api/transaction/${transaction.id}`,
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transaction),
     };
-    const response = await fetch(`http://localhost:3001/transaction/${transaction.id}`, requestOptions);
-    const data = await response.json();
+    const { data } = await axios.request(requestOptions);
     console.log(data);
 
     transactionContext.setTransaction(null);
@@ -31,10 +31,11 @@ const Update: NextPage = () => {
 
   const deleteTransaction = async () => {
     const requestOptions = {
+      url: `/api/transaction/${transaction.id}`,
       method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
     };
-    const response = await fetch(`http://localhost:3001/transaction/${transaction.id}`, requestOptions);
-    const data = await response.json();
+    const { data } = await axios.request(requestOptions);
     console.log(data);
 
     transactionContext.setTransaction(null);

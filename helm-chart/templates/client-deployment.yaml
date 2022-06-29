@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-client
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{.Values.client.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-client
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-client
+    spec:
+      containers:
+      - name: {{ .Release.Name }}-client
+        image: {{ .Values.client.image}}
+        imagePullPolicy: Never
+        resources:
+          limits:
+            cpu: 2
+            memory: 4Gi
+          requests:
+            cpu: 1
+            memory: 1Gi
+        ports:
+          - containerPort: {{ .Values.client.targetPort}}
+            protocol: TCP
+        env:
+          - name: API_BASE_URL
+            value: {{ .Release.Name }}-nginx-service:{{ .Values.nginx.port }}
+      restartPolicy: Always

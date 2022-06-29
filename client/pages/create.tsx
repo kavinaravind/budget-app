@@ -1,6 +1,7 @@
 import React from "react";
 import type { NextPage } from "next";
 import Router from 'next/router'
+import axios from "axios";
 
 import { Context, Transaction, TransactionContext } from "./_app";
 
@@ -14,12 +15,12 @@ const Create: NextPage = () => {
     event.preventDefault();
 
     const requestOptions = {
+      url: '/api/transaction',
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(transaction),
+      data: JSON.stringify(transaction),
     };
-    const response = await fetch("http://localhost:3001/transaction", requestOptions);
-    const data = await response.json();
+    const {data} = await axios.request(requestOptions);
     console.log(data);
 
     transactionContext.setTransaction(null);

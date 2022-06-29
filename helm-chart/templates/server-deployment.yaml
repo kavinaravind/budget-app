@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-server
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{.Values.server.replicaCount}}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-server
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-server
+    spec:
+      containers:
+        - name: {{ .Release.Name }}-server
+          image: {{ .Values.server.image}}
+          imagePullPolicy: Never
+          resources:
+            limits:
+              cpu: 2
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 1Gi
+          ports:
+            - containerPort: {{ .Values.server.targetPort}}
+              protocol: TCP
+          env:
+            - name: MONGO_URI
+              value: mongodb://{{ .Release.Name }}-db-service:27017
+      restartPolicy: Always

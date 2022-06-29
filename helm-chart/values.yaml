@@ -1,0 +1,22 @@
+nginx:
+  port: 80
+  targetPort: 7724
+  replicaCount: 1
+  image: nginx:1.23
+  
+client:
+  port: 7725
+  targetPort: 3000
+  replicaCount: 1
+  image: client:v1.0.2
+
+server:
+  port: 7726
+  targetPort: 7726
+  replicaCount: 1
+  image: server:v1.0.0
+
+db:
+  port: 27017
+  targetPort: 27017
+  image: mongo:4.2

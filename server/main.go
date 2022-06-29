@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -14,8 +15,8 @@ import (
 )
 
 const (
-	address        = ":3001"
-	connectionURI  = "mongodb://127.0.0.1:27017/"
+	address        = ":7726"
+	connectionURI  = "mongodb://127.0.0.1:27017"
 	dbName         = "budget"
 	collectionName = "transaction"
 )
@@ -36,7 +37,12 @@ func status(msg string) map[string]string {
 }
 
 func setupMongo(ctx context.Context) error {
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connectionURI))
+	uri := connectionURI
+	if envURI := os.Getenv("MONGO_URI"); envURI != "" {
+		uri = envURI
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return err
 	}
