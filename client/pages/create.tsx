@@ -15,6 +15,7 @@ const Create: NextPage = () => {
   const updateTransaction = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    transaction.cost *= 100;
     const requestOptions = {
       url: "/api/transaction",
       method: "POST",
@@ -39,7 +40,7 @@ const Create: NextPage = () => {
         t.category = value;
         break;
       case "cost":
-        t.cost = (+value * 100);
+        t.cost = +value;
         break;
     }
     setTransaction(t);

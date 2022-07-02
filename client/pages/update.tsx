@@ -18,10 +18,12 @@ const Update: NextPage = () => {
   const updateTransaction = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    transaction.cost *= 100;
     const requestOptions = {
       url: `/api/transaction/${transaction.id}`,
       method: "PUT",
       headers: { "Content-Type": "application/json" },
+      data: JSON.stringify(transaction),
     };
     const { data } = await axios.request(requestOptions);
     console.log(data);
@@ -54,7 +56,7 @@ const Update: NextPage = () => {
         t.category = value;
         break;
       case "cost":
-        t.cost = (+value * 100);
+        t.cost = +value;
         break;
     }
     setTransaction(t);
