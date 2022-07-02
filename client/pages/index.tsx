@@ -1,44 +1,45 @@
 import React from "react";
 import type { NextPage } from "next";
-import Router from 'next/router'
-import getConfig from 'next/config'
+import Router from "next/router";
+import getConfig from "next/config";
 import axios from "axios";
 
-import { Transaction, Context,TransactionContext } from "./_app";
+import { Transaction, Context, TransactionContext } from "./_app";
 
 type HomeProps = {
-  transactions: Transaction[]
-}
+  transactions: Transaction[];
+};
 
-const { serverRuntimeConfig } = getConfig()
+const { serverRuntimeConfig } = getConfig();
 
-export async function getServerSideProps(): Promise<{props: HomeProps}> {
+export async function getServerSideProps(): Promise<{ props: HomeProps }> {
   const requestOptions = {
     url: `http://${serverRuntimeConfig.API_BASE_URL}/api/transactions`,
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
+    method: "GET",
+    headers: { "Content-Type": "application/json" },
   };
-  const {data: transactions} = await axios.request(requestOptions);
-  
+  const { data: transactions } = await axios.request(requestOptions);
+
   return {
     props: {
       transactions,
     },
-  }
-}
+  };
+};
 
 const Home: NextPage<HomeProps> = ({ transactions }) => {
-  const transactionContext = React.useContext<Context>(TransactionContext)
+  const transactionContext = React.useContext<Context>(TransactionContext);
 
   const createTransaction = () => {
-    transactionContext.setTransaction(null)
-    Router.push(`/create`)
-  }
+    transactionContext.setTransaction(null);
+    Router.push(`/create`);
+  };
 
   const editTransaction = (t: Transaction) => {
-    transactionContext.setTransaction(t)
-    Router.push(`/update?id=${t.id}`)
-  }
+    t.cost /= 100;
+    transactionContext.setTransaction(t);
+    Router.push(`/update?id=${t.id}`);
+  };
 
   return (
     <div className="py-10">
@@ -47,7 +48,9 @@ const Home: NextPage<HomeProps> = ({ transactions }) => {
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
-                <h1 className="text-xl font-semibold text-gray-900">Transactions</h1>
+                <h1 className="text-xl font-semibold text-gray-900">
+                  Transactions
+                </h1>
                 <p className="mt-2 text-sm text-gray-700">
                   A simple list of transactions
                 </p>
@@ -71,20 +74,53 @@ const Home: NextPage<HomeProps> = ({ transactions }) => {
                     <table className="min-w-full divide-y divide-gray-300">
                       <thead className="bg-gray-50">
                         <tr>
-                          <th scope="col" className="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Name</th>
-                          <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Category</th>
-                          <th scope="col" className="px-3 py-4 text-left text-sm font-semibold text-gray-900">Cost</th>
-                          <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-6"></th>
+                          <th
+                            scope="col"
+                            className="py-4 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6"
+                          >
+                            Name
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-6 py-4 text-left text-sm font-semibold text-gray-900"
+                          >
+                            Category
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-4 text-left text-sm font-semibold text-gray-900"
+                          >
+                            Cost
+                          </th>
+                          <th
+                            scope="col"
+                            className="relative py-3.5 pl-3 pr-4 sm:pr-6"
+                          ></th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-200 bg-white">
                         {transactions.map((t) => (
                           <tr key={t.id}>
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{t.name}</td>
-                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">{t.category}</td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{(t.cost / 100).toLocaleString("en-US", {style:"currency", currency:"USD"})}</td>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                              {t.name}
+                            </td>
+                            <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-500">
+                              {t.category}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                              {(t.cost / 100).toLocaleString("en-US", {
+                                style: "currency",
+                                currency: "USD",
+                              })}
+                            </td>
                             <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                              <button type="button" onClick={() => editTransaction(t)} className="text-blue-600 hover:text-blue-900">Edit</button>
+                              <button
+                                type="button"
+                                onClick={() => editTransaction(t)}
+                                className="text-blue-600 hover:text-blue-900"
+                              >
+                                Edit
+                              </button>
                             </td>
                           </tr>
                         ))}
