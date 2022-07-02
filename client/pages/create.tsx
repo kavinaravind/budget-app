@@ -99,6 +99,7 @@ const Create: NextPage = () => {
                             type={input.type}
                             name={input.name}
                             id={input.name}
+                            {...(input.type === "number") && {min:"0.01", step:"0.01", max:"2500"}}
                             value={transaction[input.name]}
                             onChange={(e) => handleChange(e)}
                             className="pl-7 max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 
