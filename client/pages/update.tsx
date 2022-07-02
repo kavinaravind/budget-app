@@ -1,46 +1,47 @@
 import React from "react";
 import type { NextPage } from "next";
-import Router from 'next/router'
+import Router from "next/router";
 import axios from "axios";
 
 import { Context, Transaction, TransactionContext } from "./_app";
 
 const Update: NextPage = () => {
-
-  const transactionContext = React.useContext<Context>(TransactionContext)
+  const transactionContext = React.useContext<Context>(TransactionContext);
   if (transactionContext.transaction == null) {
-    return <></>
+    return <></>;
   }
 
-  const [transaction, setTransaction] = React.useState<Transaction>(transactionContext.transaction);
+  const [transaction, setTransaction] = React.useState<Transaction>(
+    transactionContext.transaction
+  );
 
   const updateTransaction = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     const requestOptions = {
       url: `/api/transaction/${transaction.id}`,
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.request(requestOptions);
     console.log(data);
 
     transactionContext.setTransaction(null);
     Router.push(`/`);
-  }
+  };
 
   const deleteTransaction = async () => {
     const requestOptions = {
       url: `/api/transaction/${transaction.id}`,
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
     };
     const { data } = await axios.request(requestOptions);
     console.log(data);
 
     transactionContext.setTransaction(null);
     Router.push(`/`);
-  }
+  };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const t = { ...transaction };
@@ -50,21 +51,36 @@ const Update: NextPage = () => {
         t.name = value;
         break;
       case "category":
-        t.category =value;
+        t.category = value;
         break;
       case "cost":
         t.cost = +value;
         break;
     }
     setTransaction(t);
+  };
+
+  interface input {
+    name: keyof Transaction;
+    type: string;
+    title: string;
   }
-  
+
+  const inputs: input[] = [
+    { type: "text", name: "name", title: "Name" },
+    { type: "text", name: "category", title: "Category" },
+    { type: "number", name: "cost", title: "Cost In Cents" },
+  ];
+
   return (
     <div className="py-10">
       <main>
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           <div className="px-4 sm:px-6 lg:px-8">
-            <form onSubmit={(e) => updateTransaction(e)} className="space-y-8 divide-y divide-gray-200">
+            <form
+              onSubmit={(e) => updateTransaction(e)}
+              className="space-y-8 divide-y divide-gray-200"
+            >
               <div className="space-y-8 divide-y divide-gray-200 sm:space-y-5">
                 <div className="pt-8 space-y-6 sm:pt-10 sm:space-y-5">
                   <div>
@@ -76,62 +92,27 @@ const Update: NextPage = () => {
                     </p>
                   </div>
                   <div className="space-y-6 sm:space-y-5">
-                    <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                      <label
-                        htmlFor="name"
-                        className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                      >
-                        Name
-                      </label>
-                      <div className="mt-1 sm:mt-0 sm:col-span-2">
-                        <input
-                          type="text"
-                          name="name"
-                          id="name"
-                          value={transaction.name}
-                          onChange={(e) => handleChange(e)}
-                          className="max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                        />
+                    {inputs.map((input) => (
+                      <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
+                        <label
+                          htmlFor={input.name}
+                          className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
+                        >
+                          {input.title}
+                        </label>
+                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                          <input
+                            type={input.type}
+                            name={input.name}
+                            id={input.name}
+                            value={transaction[input.name]}
+                            onChange={(e) => handleChange(e)}
+                            className="max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 
+                                      sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
+                          />
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                      <label
-                        htmlFor="category"
-                        className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                      >
-                        Category
-                      </label>
-                      <div className="mt-1 sm:mt-0 sm:col-span-2">
-                        <input
-                          type="text"
-                          name="category"
-                          id="category"
-                          value={transaction.category}
-                          onChange={(e) => handleChange(e)}
-                          className="max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="sm:grid sm:grid-cols-3 sm:gap-4 sm:items-start sm:border-t sm:border-gray-200 sm:pt-5">
-                      <label
-                        htmlFor="cost"
-                        className="block text-sm font-medium text-gray-700 sm:mt-px sm:pt-2"
-                      >
-                        Cost in Cents
-                      </label>
-                      <div className="mt-1 sm:mt-0 sm:col-span-2">
-                        <input
-                          type="number"
-                          name="cost"
-                          id="cost"
-                          value={transaction.cost}
-                          onChange={(e) => handleChange(e)}
-                          className="max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
-                        />
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </div>
               </div>
@@ -140,7 +121,7 @@ const Update: NextPage = () => {
                 <div className="flex justify-end">
                   <button
                     type="button"
-                    onClick={() => Router.push('/')}
+                    onClick={() => Router.push("/")}
                     className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 
                               hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
