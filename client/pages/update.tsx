@@ -54,7 +54,7 @@ const Update: NextPage = () => {
         t.category = value;
         break;
       case "cost":
-        t.cost = +value;
+        t.cost = (+value * 100);
         break;
     }
     setTransaction(t);
@@ -100,14 +100,19 @@ const Update: NextPage = () => {
                         >
                           {input.title}
                         </label>
-                        <div className="mt-1 sm:mt-0 sm:col-span-2">
+                        <div className="relative mt-1 sm:mt-0 sm:col-span-2">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 sm:text-sm">
+                              {input.type === "number" ? "$" : ">"}
+                            </span>
+                          </div>
                           <input
                             type={input.type}
                             name={input.name}
                             id={input.name}
                             value={transaction[input.name]}
                             onChange={(e) => handleChange(e)}
-                            className="max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 
+                            className="pl-7 max-w-lg block w-full shadow-sm focus:ring-blue-500 focus:border-blue-500 
                                       sm:max-w-xs sm:text-sm border-gray-300 rounded-md"
                           />
                         </div>
